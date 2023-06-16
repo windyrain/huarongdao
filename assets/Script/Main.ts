@@ -1,5 +1,6 @@
 import { auto } from "./Auto";
 import { bindHistoryConfirmEvent } from "./HistoryPopup";
+import { bindChooseLevelEvent } from "./LevelPopup";
 import {
   bindSuccessEvent,
   canMoveDown,
@@ -35,10 +36,16 @@ export default class Main extends cc.Component {
   historyPopup = null;
 
   @property(cc.Node)
+  guanqiaPopup = null;
+
+  @property(cc.Node)
   btnReset = null;
 
   @property(cc.Node)
   btnTip = null;
+
+  @property(cc.Node)
+  btnLevel = null;
 
   isCompute = false;
 
@@ -110,11 +117,21 @@ export default class Main extends cc.Component {
       } catch (e) {}
     }
 
+    // 关卡选择功能
+    bindChooseLevelEvent((i) => {
+      if (this.mapIndex === i) return;
+      this.mapIndex = i;
+      startGame(i);
+      this.setInfo();
+      checkSuccess();
+    });
+
     startGame(this.mapIndex);
     this.setInfo();
 
     this.btnReset.on(cc.Node.EventType.TOUCH_END, this.onReset, this);
     this.btnTip.on(cc.Node.EventType.TOUCH_END, this.onTip, this);
+    this.btnLevel.on(cc.Node.EventType.TOUCH_END, this.onChooseLevel, this);
   }
 
   onReset() {
@@ -177,6 +194,10 @@ export default class Main extends cc.Component {
         this.isCompute = false;
       }
     }, 200);
+  }
+
+  onChooseLevel() {
+    this.guanqiaPopup.active = true;
   }
 
   setInfo() {
