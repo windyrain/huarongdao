@@ -55,7 +55,22 @@ export default class Main extends cc.Component {
     position: {},
   };
 
+  chessMap = {};
+
   onLoad() {
+    this.chessMap = {
+      1: cc.find("chess/zhangfei", this.node),
+      2: cc.find("chess/caocao", this.node),
+      3: cc.find("chess/machao", this.node),
+      4: cc.find("chess/huangzhong", this.node),
+      5: cc.find("chess/guanyu", this.node),
+      6: cc.find("chess/zhaoyun", this.node),
+      7: cc.find("chess/shibing0", this.node),
+      8: cc.find("chess/shibing1", this.node),
+      9: cc.find("chess/shibing2", this.node),
+      10: cc.find("chess/shibing3", this.node),
+    };
+
     cc.find("mask", this.successPopup).on(cc.Node.EventType.TOUCH_END, () => {
       this.successPopup.active = false;
       startGame(this.mapIndex);
@@ -85,6 +100,7 @@ export default class Main extends cc.Component {
 
     // 历史记录继续功能
     bindHistoryConfirmEvent(() => {
+      const { chessMap } = this;
       const { mapIndex, hrdMap } = this.historyInfo;
       const { map, name, level } = getMapInfo(mapIndex);
       const currentMap = hrdMap || map;
@@ -96,7 +112,7 @@ export default class Main extends cc.Component {
       this.star.width = 30 * level;
       Object.keys(currentPosition).forEach((item) => {
         const [x, y, z] = currentPosition[item];
-        cc.find(`chess/${item}`, this.node).position = cc.v3(x, y, z);
+        chessMap[item].position = cc.v3(x, y, z);
       });
     });
 
@@ -145,19 +161,8 @@ export default class Main extends cc.Component {
       return;
     }
     this.isCompute = true;
+    const { chessMap } = this;
     const result = auto({ hrdMap: getMap(), operate: [] });
-    const chessMap = {
-      1: cc.find("chess/zhangfei", this.node),
-      2: cc.find("chess/caocao", this.node),
-      3: cc.find("chess/machao", this.node),
-      4: cc.find("chess/huangzhong", this.node),
-      5: cc.find("chess/guanyu", this.node),
-      6: cc.find("chess/zhaoyun", this.node),
-      7: cc.find("chess/shibing0", this.node),
-      8: cc.find("chess/shibing1", this.node),
-      9: cc.find("chess/shibing2", this.node),
-      10: cc.find("chess/shibing3", this.node),
-    };
     const { operate } = result;
     let i = 0;
     setInterval(() => {
@@ -201,14 +206,14 @@ export default class Main extends cc.Component {
   }
 
   setInfo() {
+    const { chessMap } = this;
     const { name, level, map } = getMapInfo(this.mapIndex);
     this.title.string = name;
     this.star.width = 30 * level;
     const position = computePosition(map);
     Object.keys(position).forEach((item) => {
       const [x, y, z] = position[item];
-      console.log("name", item, cc.find(`chess/${item}`, this.node));
-      cc.find(`chess/${item}`, this.node).position = cc.v3(x, y, z);
+      chessMap[item].position = cc.v3(x, y, z);
     });
   }
 }

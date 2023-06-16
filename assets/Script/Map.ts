@@ -17,9 +17,9 @@ export const computePosition = (map) => {
 
   for (let i = 0; i < map.length; i++) {
     for (let j = 0; j < map[i].length; j++) {
-      const name = getKey(map[i][j]);
+      const name = map[i][j];
 
-      if (name) {
+      if (name !== 0) {
         lastPosition[name] = [
           [-320, -160, 0, 160][j],
           [320, 160, 0, -160, -320][i],
@@ -29,8 +29,8 @@ export const computePosition = (map) => {
     }
   }
 
-  lastPosition.caocao[0] -= 160;
-  lastPosition.guanyu[0] -= 160;
+  lastPosition[2][0] -= 160;
+  lastPosition[5][0] -= 160;
 
   return lastPosition;
 };
@@ -168,21 +168,6 @@ export const maps = [
   },
 ];
 
-function getKey(chessId) {
-  return {
-    1: "zhangfei",
-    2: "caocao",
-    3: "machao",
-    4: "huangzhong",
-    5: "guanyu",
-    6: "zhaoyun",
-    7: "shibing0",
-    8: "shibing1",
-    9: "shibing2",
-    10: "shibing3",
-  }[chessId];
-}
-
 export const chessCount = {
   1: 2,
   2: 4,
@@ -258,7 +243,7 @@ export function canMoveRight(chessId) {
         map[moveI][moveJ + 1] = chessId;
       }
     }
-    position[getKey(chessId)][0] += 160;
+    position[chessId][0] += 160;
   }
 
   return flag;
@@ -302,7 +287,7 @@ export function canMoveLeft(chessId) {
         map[moveI][moveJ - 1] = chessId;
       }
     }
-    position[getKey(chessId)][0] -= 160;
+    position[chessId][0] -= 160;
   }
 
   return flag;
@@ -346,7 +331,7 @@ export function canMoveUp(chessId) {
         map[moveI - 1][moveJ] = chessId;
       }
     }
-    position[getKey(chessId)][1] += 160;
+    position[chessId][1] += 160;
   }
 
   return flag;
@@ -390,7 +375,7 @@ export function canMoveDown(chessId) {
         map[moveI + 1][moveJ] = chessId;
       }
     }
-    position[getKey(chessId)][1] -= 160;
+    position[chessId][1] -= 160;
   }
 
   return flag;
