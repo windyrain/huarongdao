@@ -412,6 +412,20 @@ export function checkSuccess() {
         position: null,
       })
     );
+    const levelsStr = localStorage.getItem("@xf/levels");
+    if (!levelsStr) {
+      localStorage.setItem("@xf/levels", JSON.stringify([mapIndex]));
+    } else {
+      try {
+        const levels = JSON.parse(levelsStr);
+        if (!levels.includes(mapIndex)) {
+          levels.push(mapIndex);
+          localStorage.setItem("@xf/levels", JSON.stringify(levels));
+        }
+      } catch (e) {
+        localStorage.setItem("@xf/levels", JSON.stringify([mapIndex]));
+      }
+    }
   } else {
     localStorage.setItem(
       "@xf/historyGame",
