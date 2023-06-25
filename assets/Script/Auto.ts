@@ -81,11 +81,6 @@ export function auto({ hrdMap, operate }) {
         return { hrdMap, operate };
       }
 
-      //   if (memoryMaps.length > 100) {
-      //     console.log(JSON.stringify(memoryMaps));
-      //     return;
-      //   }
-
       const mapStr = mapToString(hrdMap);
       if (!memoryMaps.has(mapStr)) {
         memoryMaps.add(mapStr);
@@ -234,6 +229,3 @@ function autoMove({ hrdMap, operate }, chessId) {
 
   return arr;
 }
-
-// const result = auto({ hrdMap: maps[1].map, operate: [] });
-// console.log(result);

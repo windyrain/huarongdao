@@ -18,6 +18,10 @@ export default class Dialog extends cc.Component {
   nameLabel: cc.Label;
   @property(cc.Label)
   textLabel: cc.Label;
+  @property(cc.Node)
+  container: cc.Node;
+  @property(cc.Node)
+  mask: cc.Node;
 
   textDataArr: textdata[]; // 文本对话数组
 
@@ -40,7 +44,14 @@ export default class Dialog extends cc.Component {
     ]);
 
     // 初始化键盘输入监听
-    this.node.on(cc.Node.EventType.TOUCH_END, this.onClick, this);
+    this.container.on(cc.Node.EventType.TOUCH_END, this.onClick, this);
+    this.mask.on(
+      cc.Node.EventType.TOUCH_END,
+      (e) => {
+        e.preventDefault();
+      },
+      this
+    );
   }
   // 键盘按下事件
   onClick() {
@@ -50,8 +61,8 @@ export default class Dialog extends cc.Component {
   init(textDataArr: textdata[]) {
     const hrdDialog = localStorage.getItem("@xf/hrdDialog") || 0;
 
-    if (Date.now() - Number(hrdDialog) < 1000 * 60 * 60 * 24) {
-      this.node.active = false; // 显示对话框
+    if (hrdDialog) {
+      this.node.active = false; // 不显示对话框
       Dialog.isShow = false;
       return;
     }
