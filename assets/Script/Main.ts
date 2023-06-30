@@ -1,6 +1,6 @@
-import { auto } from "./Auto";
+import { auto, generateRandomMap } from "./Auto";
 import { bindHistoryConfirmEvent } from "./HistoryPopup";
-import { bindChooseLevelEvent } from "./LevelPopup";
+import { bindChooseLevelEvent, bindRandomLevelEvent } from "./LevelPopup";
 import {
   bindSuccessEvent,
   canMoveDown,
@@ -9,13 +9,18 @@ import {
   canMoveUp,
   checkSuccess,
   computePosition,
+  getIsRandom,
+  getIsUseTip,
   getMap,
   getMapInfo,
   maps,
+  setIsUseTip,
   setMap,
   setMapIndex,
   startGame,
+  startRandomGame,
 } from "./Map";
+import { isSupportRank, showRankList, submitRankScore } from "./Rank";
 
 const { ccclass, property } = cc._decorator;
 
@@ -47,6 +52,9 @@ export default class Main extends cc.Component {
   @property(cc.Node)
   btnLevel = null;
 
+  @property(cc.Node)
+  btnRank = null;
+
   isCompute = false;
 
   historyInfo = {
@@ -73,19 +81,37 @@ export default class Main extends cc.Component {
 
     cc.find("mask", this.successPopup).on(cc.Node.EventType.TOUCH_END, () => {
       this.successPopup.active = false;
+      if (getIsRandom()) {
+        this.randomGame();
+        return;
+      }
+
       startGame(this.mapIndex);
       this.setInfo();
     });
     cc.find("next", this.successPopup).on(cc.Node.EventType.TOUCH_END, () => {
+      this.successPopup.active = false;
+      if (getIsRandom()) {
+        this.randomGame();
+        return;
+      }
+
       if (this.mapIndex < maps.length - 1) {
         this.mapIndex += 1;
       }
-      this.successPopup.active = false;
       startGame(this.mapIndex);
       this.setInfo();
     });
 
     bindSuccessEvent(() => {
+      if (isSupportRank() && !getIsUseTip()) {
+        const str = localStorage.getItem("@xf/hrdScore") || "0";
+        const score = Number(str) + this.star.width / 30;
+        submitRankScore(score, () => {
+          localStorage.setItem("@xf/hrdScore", `${score}`);
+        });
+      }
+
       if (this.mapIndex === maps.length - 1) {
         cc.loader.loadRes("successPopup1", cc.SpriteFrame, (err, texture) => {
           cc
@@ -131,9 +157,21 @@ export default class Main extends cc.Component {
           };
         }
       } catch (e) {}
+    } else {
+      const levelStr = localStorage.getItem("@xf/levels") || "[]";
+      try {
+        const levels = JSON.parse(levelStr);
+
+        if (levels.length === 5) {
+          this.randomGame();
+        } else {
+          startGame(this.mapIndex);
+          this.setInfo();
+        }
+      } catch (e) {}
     }
 
-    // 关卡选择功能
+    // 绑定关卡选择功能
     bindChooseLevelEvent((i) => {
       if (this.mapIndex === i) return;
       this.mapIndex = i;
@@ -142,13 +180,30 @@ export default class Main extends cc.Component {
       checkSuccess();
     });
 
-    startGame(this.mapIndex);
-    this.setInfo();
+    // 绑定随机关卡事件
+    bindRandomLevelEvent(this.randomGame);
 
     this.btnReset.on(cc.Node.EventType.TOUCH_END, this.onReset, this);
     this.btnTip.on(cc.Node.EventType.TOUCH_END, this.onTip, this);
     this.btnLevel.on(cc.Node.EventType.TOUCH_END, this.onChooseLevel, this);
+    this.btnRank.on(cc.Node.EventType.TOUCH_END, showRankList, this);
+
+    // 不支持排行榜
+    if (!isSupportRank()) {
+      this.btnRank.active = false;
+      cc.find("text", this.btnTip).active = false;
+    }
   }
+
+  randomGame = () => {
+    const randomMap = generateRandomMap();
+    startRandomGame(randomMap.hrdMap);
+    this.setUIInfo(
+      "随机地图",
+      Math.floor(randomMap.operate.length / 20),
+      randomMap.hrdMap
+    );
+  };
 
   onReset() {
     startGame(this.mapIndex);
@@ -157,6 +212,8 @@ export default class Main extends cc.Component {
   }
 
   onTip() {
+    // 设置此关卡使用过tip
+    setIsUseTip();
     if (this.isCompute) {
       return;
     }
@@ -206,8 +263,12 @@ export default class Main extends cc.Component {
   }
 
   setInfo() {
-    const { chessMap } = this;
     const { name, level, map } = getMapInfo(this.mapIndex);
+    this.setUIInfo(name, level, map);
+  }
+
+  setUIInfo(name: string, level: number, map: Array<number[]>) {
+    const { chessMap } = this;
     this.title.string = name;
     this.star.width = 30 * level;
     const position = computePosition(map);

@@ -1,3 +1,5 @@
+import { isSupportRank } from "./Rank";
+
 const chessIdMap = {
   ZHANGFEI: 1,
   CAOCAO: 2,
@@ -181,17 +183,28 @@ export const chessCount = {
   10: 1,
 };
 
-let mapIndex, map, position;
+let mapIndex, map, position, isRandom, isUseTip;
 
 export function startGame(mIndex) {
+  isRandom = false;
+  isUseTip = false;
   mapIndex = mIndex;
   map = JSON.parse(JSON.stringify(maps[mIndex].map));
+  position = computePosition(map);
+}
+
+export function startRandomGame(hrdMap) {
+  localStorage.removeItem("@xf/historyGame");
+  isRandom = true;
+  isUseTip = false;
+  map = hrdMap;
   position = computePosition(map);
 }
 
 export function setMapIndex(i) {
   mapIndex = i;
 }
+
 export function setMap(m) {
   map = m;
   position = computePosition(m);
@@ -203,6 +216,18 @@ export function getMap() {
 
 export function getMapInfo(mapIndex) {
   return maps[mapIndex];
+}
+
+export function getIsRandom() {
+  return isRandom;
+}
+
+export function setIsUseTip() {
+  isUseTip = true;
+}
+
+export function getIsUseTip() {
+  return isUseTip;
 }
 
 export function canMoveRight(chessId) {
@@ -389,6 +414,9 @@ export function checkSuccess() {
     (!map[5] && map[4][1] === 2 && map[4][2] === 2)
   ) {
     successCallback();
+
+    if (isRandom) return;
+
     localStorage.setItem(
       "@xf/historyGame",
       JSON.stringify({
@@ -412,6 +440,8 @@ export function checkSuccess() {
       }
     }
   } else {
+    if (isRandom) return;
+
     localStorage.setItem(
       "@xf/historyGame",
       JSON.stringify({
