@@ -81,11 +81,6 @@ export function auto({ hrdMap, operate }) {
         return { hrdMap, operate };
       }
 
-      //   if (memoryMaps.length > 100) {
-      //     console.log(JSON.stringify(memoryMaps));
-      //     return;
-      //   }
-
       const mapStr = mapToString(hrdMap);
       if (!memoryMaps.has(mapStr)) {
         memoryMaps.add(mapStr);
@@ -235,5 +230,53 @@ function autoMove({ hrdMap, operate }, chessId) {
   return arr;
 }
 
-// const result = auto({ hrdMap: maps[1].map, operate: [] });
-// console.log(result);
+// 结局反推法，生成随机地图
+export const generateRandomMap = () => {
+  const endMap = [
+    [1, 4, 6, 3],
+    [1, 4, 6, 3],
+    [5, 5, 8, 10],
+    [7, 2, 2, 0],
+    [9, 2, 2, 0],
+  ];
+
+  const queue = [{ hrdMap: endMap, operate: [] }];
+  const randomMaps = [];
+  const memoryMaps = new Set();
+  const operateLength = Math.floor(30 + Math.random() * 50);
+  const startTime = Date.now();
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    const chessIds = findMoveChess(current.hrdMap);
+    let nextMaps = [];
+
+    chessIds.forEach((item) => {
+      const result = autoMove(current, item);
+      if (result.length > 0) {
+        nextMaps = nextMaps.concat(result);
+      }
+    });
+
+    // 如果有100幅地图了，或者生成时间大于1.5s了，返回地图
+    if (randomMaps.length > 100 || Date.now() - startTime > 1500) {
+      return randomMaps[Math.floor(Math.random() * randomMaps.length)];
+    }
+
+    for (let j = 0; j < nextMaps.length; j++) {
+      const nextMap = nextMaps[j];
+
+      const { hrdMap, operate } = nextMap;
+
+      const mapStr = mapToString(hrdMap);
+      if (!memoryMaps.has(mapStr)) {
+        memoryMaps.add(mapStr);
+        queue.push(nextMap);
+
+        if (operate.length > operateLength) {
+          randomMaps.push(nextMap);
+        }
+      }
+    }
+  }
+};
