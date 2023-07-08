@@ -142,7 +142,10 @@ export default class Main extends cc.Component {
       });
     });
 
-    // 历史记录功能
+    startGame(this.mapIndex);
+    this.setInfo();
+
+    // 随机关卡功能
     const result = localStorage.getItem("@xf/historyGame");
 
     if (result) {
@@ -164,9 +167,6 @@ export default class Main extends cc.Component {
 
         if (levels.length === 5) {
           this.randomGame();
-        } else {
-          startGame(this.mapIndex);
-          this.setInfo();
         }
       } catch (e) {}
     }
