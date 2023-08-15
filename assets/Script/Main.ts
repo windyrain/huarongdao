@@ -142,6 +142,9 @@ export default class Main extends cc.Component {
       });
     });
 
+    startGame(this.mapIndex);
+    this.setInfo();
+
     // 历史记录功能
     const result = localStorage.getItem("@xf/historyGame");
 
